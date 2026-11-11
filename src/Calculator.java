@@ -10,5 +10,6 @@ public class Calculator {
         int sum = a + b;
 
         System.out.println("Sum = " + sum);
+        System.out.println("Git Exercise 2 - EGit");
     }
 }
