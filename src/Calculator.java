@@ -1,27 +1,20 @@
-
 public class Calculator {
 
     public static void main(String[] args) {
-
         int a = 10;
-        int b = 20;
+        int b = 5;
 
-        int sum = a + b;
+        // Bug 1: dividing by a value that is always zero
+        int zero = 0;
+        int bad = a / zero;
 
-        System.out.println("Sum = " + sum);
-        System.out.println("Git Exercise 2 - EGit");
+        // Bug 2: using a variable that is always null
+        String text = null;
+        int len = text.length();
 
-        // Code quality issues for SonarQube analysis
-
-        int unusedVariable = 100;
-
-        System.out.println("Calculator Application");
-
-        if (a == 10) {
-            System.out.println("Value is 10");
+        // Bug 3: comparing a value with itself
+        if (a == a) {
+            bad++;
         }
-
-        String name = "Calculator";
-        System.out.println(name);
     }
 }
