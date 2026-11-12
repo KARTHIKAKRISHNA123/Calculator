@@ -1,0 +1,12 @@
+Sonar Qube Plugin
+Name	SonarQube
+Server URL	http://localhost:9000
+Server authentication token	sonar-token
+
+
+Credential configuration
+Field	Value
+Kind	Secret text
+Secret	Paste your generated SonarQube token
+ID	sonar-token
+Description	SonarQube authentication token
