@@ -1,0 +1,107 @@
+
+pipeline {
+    agent any
+
+    parameters {
+        string(
+            name: 'GIT_BRANCH',
+            defaultValue: 'exercise-9-ci-pipeline',
+            description: 'Git branch to build'
+        )
+    }
+
+    environment {
+        SONAR_PROJECT_KEY = 'Calculator'
+        SONAR_PROJECT_NAME = 'Calculator'
+        SONAR_HOST_URL = 'http://localhost:9000'
+        SONAR_PLUGIN_VERSION = '5.0.0.4389'
+    }
+
+    stages {
+
+        // Stage 1: Checkout
+        stage('Checkout') {
+            steps {
+                git branch: "${params.GIT_BRANCH}",
+                    url: 'https://github.com/KARTHIKAKRISHNA123/Calculator.git'
+            }
+        }
+
+        // Stage 2: Compile
+        stage('Compile') {
+            steps {
+                bat 'mvn clean compile'
+            }
+        }
+
+        // Stage 3: Unit Testing - Gate A
+        stage('UnitTest') {
+            steps {
+                bat 'mvn test'
+            }
+            post {
+                always {
+                    junit testResults: '**/target/surefire-reports/*.xml',
+                          allowEmptyResults: true
+                }
+            }
+        }
+
+        // Stage 4: Code Coverage - Gate B
+        stage('Coverage') {
+            steps {
+                bat 'mvn clean test'
+
+                recordCoverage(
+                    tools: [[
+                        parser: 'JACOCO',
+                        pattern: '**/target/site/jacoco/jacoco.xml'
+                    ]],
+                    qualityGates: [
+                        [
+                            threshold: 80.0,
+                            metric: 'INSTRUCTION',
+                            baseline: 'PROJECT',
+                            unstable: false
+                        ],
+                        [
+                            threshold: 80.0,
+                            metric: 'LINE',
+                            baseline: 'PROJECT',
+                            unstable: false
+                        ]
+                    ],
+                    sourceCodeRetention: 'EVERY_BUILD'
+                )
+            }
+        }
+
+        // Stage 5: SonarQube - Gate C
+        stage('StaticAnalysis') {
+            steps {
+                withCredentials([
+                    string(
+                        credentialsId: 'Jenkins-Calculator',
+                        variable: 'SONAR_TOKEN'
+                    )
+                ]) {
+                    bat """
+                        mvn clean test org.sonarsource.scanner.maven:sonar-maven-plugin:${SONAR_PLUGIN_VERSION}:sonar ^
+                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} ^
+                        -Dsonar.projectName=${SONAR_PROJECT_NAME} ^
+                        -Dsonar.host.url=${SONAR_HOST_URL} ^
+                        -Dsonar.token=%SONAR_TOKEN% ^
+                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml ^
+                        -Dsonar.qualitygate.wait=true
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Calculator gated CI pipeline finished.'
+        }
+    }
+}
