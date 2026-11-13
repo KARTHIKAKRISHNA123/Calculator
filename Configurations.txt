@@ -10,3 +10,5 @@ Kind	Secret text
 Secret	Paste your generated SonarQube token
 ID	sonar-token
 Description	SonarQube authentication token
+
+git clone -b exercise-9-ci-pipeline https://github.com/KARTHIKAKRISHNA123/Calculator.git
